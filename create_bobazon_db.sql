@@ -1,0 +1,2 @@
+DROP DATABASE IF EXISTS bobazon_db;
+CREATE DATABASE bobazon_db;
