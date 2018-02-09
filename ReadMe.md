@@ -35,3 +35,7 @@ It will present the manager a list of options:
     * Add New Product - Add New Product to inventory
 
     * Exit Manager Menu
+
+### Node Package Manager - npm install
+
+This command will ensure that all required npm packages have been installed.
