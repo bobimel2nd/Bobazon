@@ -1,5 +1,6 @@
 ```
 node_modules
+Skip
 .DS_Store
 .env
 *.log
