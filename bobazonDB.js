@@ -10,19 +10,22 @@ var dbBobazon = function() {
 	});
 
 	this.displayAll = function(theCallback) {
-		this.display("SELECT * FROM products", theCallback)
+		var ttl = "\nAll Available products...\n"
+		var sql = "SELECT * FROM products"
+		this.display(sql, ttl, theCallback)
 	}
 
 	this.displayLowQty = function(theQty, theCallback) {
+		var ttl = "\nProducts with Quantity <= " + theQty + "...\n"
 		var sql = "SELECT * FROM products where stock_quantity<=" + theQty
-		this.display(sql, theCallback)
+		this.display(sql, ttl, theCallback)
 	}
 
-	this.display = function(theQuery, theCallback) {
+	this.display = function(theQuery, theTitle, theCallback) {
 		var query = this.connection.query(theQuery, function(err, rows, cols) {
 			if (err) throw err
 			var l = lineBreak(cols)
-			var s= "\nAvailable products...\n"
+			var s= theTitle
 			s += l;
 			s += getHeadings(cols)
 			s += l
