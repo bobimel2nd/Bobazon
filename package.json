@@ -1,15 +1,25 @@
 {
   "name": "bobazon",
   "version": "1.0.0",
-  "main": "bobazon.js",
+  "description": "Bob's Store",
+  "main": "bobazonCustomer.js",
+  "dependencies": {
+    "cli-table": "^0.3.1",
+    "inquirer": "^5.1.0",
+    "mysql": "^2.15.0"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "inquirer": "^5.1.0",
-    "mysql": "^2.15.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bobimel2nd/Bobazon.git"
   },
-  "description": "Bob's Online Store"
+  "author": "Bob Imel II",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bobimel2nd/Bobazon/issues"
+  },
+  "homepage": "https://github.com/bobimel2nd/Bobazon#readme"
 }

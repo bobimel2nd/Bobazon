@@ -1,4 +1,5 @@
 var mySql = require("mysql");
+var cliTable = require('cli-table')
 
 var dbBobazon = function() {
 	this.connection = mySql.createConnection({
@@ -10,13 +11,13 @@ var dbBobazon = function() {
 	});
 
 	this.displayAll = function(theCallback) {
-		var ttl = "\nAll Available products...\n"
+		var ttl = "\nBobAZon Available products...\n"
 		var sql = "SELECT * FROM products"
 		this.display(sql, ttl, theCallback)
 	}
 
 	this.displayLowQty = function(theQty, theCallback) {
-		var ttl = "\nProducts with Quantity <= " + theQty + "...\n"
+		var ttl = "\nBobAZon Products with Quantity <= " + theQty + "...\n"
 		var sql = "SELECT * FROM products where stock_quantity<=" + theQty
 		this.display(sql, ttl, theCallback)
 	}
@@ -24,14 +25,38 @@ var dbBobazon = function() {
 	this.display = function(theQuery, theTitle, theCallback) {
 		var query = this.connection.query(theQuery, function(err, rows, cols) {
 			if (err) throw err
-			var l = lineBreak(cols)
-			var s= theTitle
-			s += l;
-			s += getHeadings(cols)
-			s += l
-			rows.forEach((rec) => { s += getData(rec, cols) })
-			s += l
-			console.log(s)
+
+			zTtl = []
+			zWid = []
+			zJus = []
+			cols.forEach((fld) => {
+				zTtl.push(fld.name)
+				zWid.push((fld.type===253) ? fld.length/3 : fld.length)
+				zJus.push( ((fld.type===3) || (fld.type===246)) ? 'right' : 'left')
+			})
+
+			var sTable = new cliTable({
+				chars: { 'top': '═' , 'top-mid': '╤' , 'top-left': '╔' , 'top-right': '╗'
+			        	, 'bottom': '═' , 'bottom-mid': '╧' , 'bottom-left': '╚' , 'bottom-right': '╝'
+			        	, 'left': '║' , 'left-mid': '╟' , 'mid': '─' , 'mid-mid': '┼'
+			        	, 'right': '║' , 'right-mid': '╢' , 'middle': '│' },
+				style: { 'padding-left': 1
+        				, 'padding-right': 1
+        				, head: ['white']
+        				, border: ['cyan']
+        				, compact : true },
+				head: zTtl,
+				colWidths: zWid,
+				colAligns: zJus
+			});
+
+			rows.forEach((rec) => {
+				var zCol = []
+				cols.forEach((fld) => zCol.push((fld.type===246) ?  Number(rec[fld.name]).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,') : rec[fld.name]))
+				sTable.push(zCol)
+			})
+
+			console.log(theTitle + sTable.toString());
 			theCallback()
 	 	})
 	}
@@ -41,7 +66,7 @@ var dbBobazon = function() {
 				"SELECT * FROM products where item_id = ?",
 				itm,
 				function(err, rows, cols) {
-			if ((err) || (rows.length != 1)) {
+			if ((err) || (rows.length !== 1)) {
 				failCallback()
 			} else {
 				succCallback(rows[0])
@@ -54,10 +79,10 @@ var dbBobazon = function() {
 				"SELECT * FROM products where product_name = ?",
 				nam,
 				function(err, rows, cols) {
-			if (rows.length === 1) {
-				failCallback(rows[0])
+			if ((err) || (rows.length !== 1)) {
+				failCallback()
 			} else {
-				succCallback()
+				succCallback(rows[0])
 			}
 		})
 	}
@@ -89,47 +114,22 @@ var dbBobazon = function() {
 
 module.exports = dbBobazon;
 
-function lineBreak(flds) {
-	var s = "+"
-	for (i=0; i<flds.length; i++) {
-		s += element('-'.repeat(100), flds[i])
-		s += "+"
+function Justify(dat, typ, len) {
+	switch (typ) {
+		case 3: 	// integer - right justify
+			if (dat.length > len-2) dat = dat.substring(0,len-2)
+			return (' '.repeat(len-dat.length-1) + dat)
+		case 246: 	// decimal - right justify
+			if (!isNaN(dat)) dat = Number(dat).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+			if (dat.length > len) dat = dat.substring(0,len-2)
+			return (' '.repeat(len-dat.length-1) + dat)
+		case 253: 	// VarChar - Left justify
+			len /= 3;
+			if (dat.length > len) dat = dat.substring(0,len-2)
+			return (dat + ' '.repeat(len-dat.length-1))
+		default:
+			if (dat.length > len) dat = dat.substring(0,len-2)
+			return (' ' + dat + ' '.repeat(len-dat.length-1))
 	}
-	return s + '\n';
-}
 
-function getHeadings(flds) {
-	var s = "|"
-	for (i=0; i<flds.length; i++) {
-		s += element(flds[i].name, flds[i])
-		s += "|"
-	}
-	return s + '\n';
-}
-
-function getData(data, flds) {
-	var s = "|"
-	for (i=0; i<flds.length; i++) {
-		s += element(data[flds[i].name], flds[i])
-		s += "|"
-	}
-	return s + '\n';
-}
-
-function element(dat, fld) {
-	var data = "" + dat
-	var length = fld.length;
-	switch (fld.type) {
-		case 3: // integer - right justify
-			if (data.length > length-2) data = data.substring(0,length-2)
-			return (' '.repeat(length-data.length-1) + data + ' ')
-		case 253: // varchar - left justify
-			length /= 3;
-			if (data.length > length) data = data.substring(0,length-2)
-			return (' ' + data + ' '.repeat(length-data.length-1))
-		case 246: // decimal - right justify
-			if (!isNaN(data)) data = Number(data).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
-			if (data.length > length) data = data.substring(0,length-2)
-			return (' '.repeat(length-data.length-1) + data + ' ')
-	}
 }
