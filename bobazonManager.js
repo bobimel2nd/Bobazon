@@ -114,7 +114,7 @@ function mgrAddProd() {
       dpt = response.Dept
       rtl = Number(response.Retail)
       qty = Number(response.Qty)
-      tbl.getProductByName(nam, itemAdd, itemNotAddable)
+      tbl.getProductByName(nam, itemNotAddable, itemAdd)
     })
 }
 
